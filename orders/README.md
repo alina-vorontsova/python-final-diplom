@@ -9,11 +9,14 @@ createdb -U postgres diploma
 ```
 3. Провести миграции 
 ```bash
-python orders/manage.py makemigrations
 python orders/manage.py migrate
 ```
 4. Запустить сервер 
 ```bash 
 python orders/manage.py runserver
 ```
-5. Посылать запросы на сервер можно через [postman-collection](../postman_collection.json)
+5. Посылать запросы на сервер можно через готовую коллекцию [postman-collection](../postman_collection.json)
+6. Запустить тесты
+```bash
+pytest
+```
