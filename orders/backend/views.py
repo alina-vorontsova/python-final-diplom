@@ -16,10 +16,11 @@ from backend.tools import send_registration_confirmation, send_order_confirmatio
 
 
 class UserRegisterView(APIView):
-    """
-    Класс для регистрации пользователей.
-    """
+    """Регистрация пользователей."""
     def post(self, request, *args, **kwargs):
+        """Создать в базе данных запись с информацией о новом пользователе. 
+        Отправить сообщение с подтверждением о регистрации.
+        """
         user = User.objects.create(email=request.data['email'], 
                                    password=request.data['password'],
                                    username=request.data['username'],
@@ -34,10 +35,9 @@ class UserRegisterView(APIView):
 
 
 class Login(APIView):
-    """
-    Класс для выполнения входа пользователем в систему.
-    """
+    """Выполнение входа пользователем в систему."""
     def post(self, request, *args, **kwargs):
+        """Войти в систему от лица определённого пользователя."""
         user = authenticate(request, username=request.data['username'], password=request.data['password'])
         if user is not None:
             if user.is_active:
@@ -48,10 +48,9 @@ class Login(APIView):
         
 
 class ContactView(APIView):
-    """
-    Класс для заполнения контактной информации о пользователе.
-    """
+    """Заполнение контактной информации о пользователе."""
     def post(self, request, *args, **kwargs):
+        """Внести в базу данных контактную информацию определённого пользователя."""
         contact = Contact.objects.create(user = request.user,
                                          city = request.data['city'],
                                          street = request.data['street'],
@@ -65,12 +64,15 @@ class ContactView(APIView):
         
 
 class SupplierUpdate(APIView):
-    """
-    Класс для загрузки товаров 
-    """
+    """Загрузка информации о магазине, категориях товаров, товарах, характеристиках."""
     permission_classes = [IsAuthenticated & IsShop]
 
     def post(self, request, file_name):
+        """Загрузить в базу данных информацию о магазине, категориях товаров, товарах, характеристиках.
+        
+        Ключевые аргументы: 
+        file_name -- название файла относительно папки data, формат .yaml.
+        """
         with open(f'data/{file_name}', 'r', encoding='UTF-8') as stream:
             data = yaml.safe_load(stream)
             shop, created = Shop.objects.get_or_create(name=data['shop'])
@@ -97,9 +99,7 @@ class SupplierUpdate(APIView):
     
 
 class ShopView(ReadOnlyModelViewSet):
-    """
-    Класс для просмотра всех магазинов и сортировки по параметру "статус".
-    """
+    """Просмотр всех магазинов и сортировка по параметру 'статус'."""
     queryset = Shop.objects.all()
     serializer_class = ShopSerializer
     permission_classes = [IsAuthenticated]
@@ -108,9 +108,7 @@ class ShopView(ReadOnlyModelViewSet):
 
 
 class CategoryView(ReadOnlyModelViewSet):
-    """
-    Класс для просмотра всех категорий товаров и сортировки по параметру "магазины".
-    """
+    """Просмотр всех категорий товаров и сортировка по параметру 'магазины'."""
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     permission_classes = [IsAuthenticated]
@@ -119,9 +117,7 @@ class CategoryView(ReadOnlyModelViewSet):
 
 
 class ProductView(ReadOnlyModelViewSet):
-    """
-    Класс для просмотра всех товаров и сортировки по параметру "категория".
-    """
+    """Просмотр всех товаров и сортировка по параметру 'категория'."""
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
     permission_classes = [IsAuthenticated]
@@ -130,17 +126,17 @@ class ProductView(ReadOnlyModelViewSet):
 
 
 class OrderView(APIView):
-    """
-    Класс для получения всех заказов, созданных пользователем, и создания нового заказа.
-    """
+    """Получение всех заказов, созданных пользователем, и создание нового заказа."""
     
     def get(self, request, *args, **kwargs):
+        """Просмотреть все заказы, созданные пользователем."""
         permission_classes = [IsAuthenticated]
         orders = Order.objects.filter(user_id=request.user.id).exclude(state='basket').annotate(total_sum=Sum(F('order_items__quantity') * F('order_items__product_info__price')))
         serializer = OrderSerializer(orders, many=True)
         return Response(serializer.data)
     
     def post(self, request, *args, **kwargs):
+        """Создать новый заказ."""
         order = Order.objects.create(user = request.user,
                                      state ='basket')
         for order_item in request.data:
@@ -154,10 +150,13 @@ class OrderView(APIView):
 
 
 class OrderInfoView(APIView):
-    """
-    Класс для просмотра подробной информации о заказе.
-    """
-    def get(self, request, order_id, *args, **kwargs):
+    """Просмотр подробной информации о заказе."""
+    def get(self, request, order_id: int, *args, **kwargs):
+        """Просмотреть подробную информацию о заказе.
+    
+        Ключевые аргументы: 
+        order_id -- ID заказа в базе данных.
+        """
         permission_classes = [IsAuthenticated]
         order = Order.objects.filter(id=order_id).annotate(total_sum=Sum(F('order_items__quantity') * F('order_items__product_info__price')))
         serializer = OrderInfoSerializer(order, many=True)
@@ -165,10 +164,9 @@ class OrderInfoView(APIView):
         
 
 class BasketView(APIView):
-    """
-    Класс для заполнения контактов в корзине.
-    """
+    """Заполнение адреса при оформлении заказа на стадии 'в корзине'."""
     def patch(self, request, *args, **kwargs):
+        """Заполнить адрес при оформлении заказа на стадии 'в корзине'."""
         permission_classes = [IsAuthenticated]
         contact = Contact.objects.get(id=request.data['contacts'])
         order = Order.objects.get(user_id=request.user.id, state='basket')
@@ -180,10 +178,9 @@ class BasketView(APIView):
         
 
 class OrderConfirmation(APIView):
-    """
-    Класс для подтверждения заказа.
-    """
+    """Подтверждение заказа от пользователя и отправка эл. письма с подтверждением заказа."""
     def post(self, request, *args, **kwargs):
+        """Получить потверждение заказа от пользователя и отправить эл. письмо с подтверждением заказа."""
         permission_classes = [IsAuthenticated]
         order = Order.objects.get(user_id=request.user.id, state='new')
         action = request.data['action']

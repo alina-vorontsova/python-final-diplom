@@ -5,6 +5,7 @@ from backend.models import Shop, Category, Product, ProductParameter, ProductInf
 
 
 class UserSerializer(ModelSerializer):
+    """Работа с пользователями."""
     class Meta:
         model = User
         fields = ['id', 'email', 'full_name']
@@ -12,6 +13,7 @@ class UserSerializer(ModelSerializer):
 
 
 class ShopSerializer(ModelSerializer):
+    """Работа с магазинами."""
     class Meta:
         model = Shop
         fields = ['id', 'name', 'state']
@@ -19,6 +21,7 @@ class ShopSerializer(ModelSerializer):
     
 
 class CategorySerializer(ModelSerializer):
+    """Работа с категориями товаров."""
     shops = StringRelatedField(many=True)
 
     class Meta:
@@ -28,6 +31,7 @@ class CategorySerializer(ModelSerializer):
 
 
 class ProductSerializer(ModelSerializer):
+    """Работа с общей информацией о товарах."""
     category = StringRelatedField()
 
     class Meta:
@@ -37,6 +41,7 @@ class ProductSerializer(ModelSerializer):
 
 
 class ProductParameterSerializer(ModelSerializer):
+    """Работа с параметрами товаров."""
     parameter = StringRelatedField()
 
     class Meta:
@@ -46,6 +51,7 @@ class ProductParameterSerializer(ModelSerializer):
 
 
 class ProductInfoSerializer(ModelSerializer):
+    """Работа с подробной информацией о товарах."""
     product = ProductSerializer(read_only=True)
     parameters = ProductParameterSerializer(read_only=True, many=True)
 
@@ -56,12 +62,14 @@ class ProductInfoSerializer(ModelSerializer):
 
 
 class ContactSerializer(ModelSerializer):
+    """Работа с контактами пользователей."""
     class Meta:
         model = Contact
         fields = ['city', 'street', 'house', 'building', 'structure', 'apartment', 'phone']
 
 
 class OrderSerializer(ModelSerializer):
+    """Работа с общей информацией о заказах."""
     total_sum = serializers.IntegerField()
     contact = ContactSerializer(read_only=True)
 
@@ -75,6 +83,7 @@ class OrderSerializer(ModelSerializer):
 
 
 class OrderItemSerializer(ModelSerializer):
+    """Работа с позициями в заказах."""
     product_info = ProductInfoSerializer(read_only=True)
     
     class Meta:
@@ -83,6 +92,7 @@ class OrderItemSerializer(ModelSerializer):
 
 
 class OrderInfoSerializer(ModelSerializer):
+    """Работа с подробной информацией о заказах и позициях в них."""
     total_sum = serializers.IntegerField()
     contact = ContactSerializer(read_only=True)
     order_items = OrderItemSerializer(read_only=True, many=True)

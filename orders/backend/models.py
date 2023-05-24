@@ -4,9 +4,7 @@ from django.contrib.auth.validators import UnicodeUsernameValidator
 
 
 class OrderStateChoices(models.TextChoices):
-    """
-    Статусы заказа.
-    """
+    """Статусы заказа."""
     BASKET = 'basket', 'Статус корзины'
     NEW = 'new' 'Новый'
     CONFIRMED = 'confirmed', 'Подтвержден'
@@ -17,17 +15,13 @@ class OrderStateChoices(models.TextChoices):
 
 
 class UserTypeChoices(models.TextChoices):
-    """
-    Типы пользователей.
-    """
+    """Типы пользователей."""
     SHOP = 'shop', 'Магазин'
     BUYER = 'buyer', 'Покупатель'
 
 
 class UserManager(BaseUserManager):
-    """
-    Управление пользователями.
-    """
+    """Управление пользователями."""
     use_in_migrations = True
 
     def _create_user(self, email, password, **extra_fields):
@@ -57,9 +51,7 @@ class UserManager(BaseUserManager):
 
 
 class User(AbstractUser):
-    """
-    Стандартная модель пользователей.
-    """
+    """Стандартная модель пользователей."""
     REQUIRED_FIELDS = ['email']
     objects = UserManager()
     EMAIL_FIELD = 'email'
@@ -97,9 +89,7 @@ class User(AbstractUser):
 
 
 class Shop(models.Model):
-    """
-    Магазины.
-    """
+    """Магазины."""
     name = models.CharField(max_length=40, unique=True, verbose_name='Название')
     url = models.URLField(null=True, blank=True, unique=True, verbose_name='Ссылка')
     filename = models.FileField(null=True, blank=True, verbose_name='Название файла')
@@ -115,9 +105,7 @@ class Shop(models.Model):
 
 
 class Category(models.Model):
-    """
-    Категории товаров.
-    """
+    """Категории товаров."""
     id = models.PositiveIntegerField(unique=True, primary_key=True)
     name = models.CharField(max_length=40, unique=True, verbose_name='Название')
     shops = models.ManyToManyField(Shop, related_name='categories', blank=True, verbose_name='Магазины')
@@ -132,9 +120,7 @@ class Category(models.Model):
     
 
 class Product(models.Model):
-    """
-    Товары.
-    """
+    """Товары."""
     name = models.CharField(max_length=100, verbose_name='Название')
     category = models.ForeignKey(Category, related_name='products', on_delete=models.CASCADE, null=True, blank=True, verbose_name='Категория')
 
@@ -148,9 +134,7 @@ class Product(models.Model):
 
 
 class ProductInfo(models.Model):
-    """
-    Информация о товарах.
-    """
+    """Информация о товарах."""
     product = models.ForeignKey(Product, related_name='product_info', on_delete=models.CASCADE, null=True, blank=True, verbose_name='Продукт')
     shop = models.ForeignKey(Shop, related_name='product_info', on_delete=models.CASCADE, null=True, blank=True, verbose_name='Магазин')
     external_id = models.PositiveIntegerField(unique=True, verbose_name='Внешний Id')
@@ -170,9 +154,7 @@ class ProductInfo(models.Model):
     
 
 class Parameter(models.Model):
-    """
-    Характеристики.
-    """
+    """Характеристики."""
     name = models.CharField(max_length=40, unique=True, verbose_name='Название')
 
     class Meta:
@@ -185,9 +167,7 @@ class Parameter(models.Model):
 
 
 class ProductParameter(models.Model):
-    """
-    Товары с характеристиками.
-    """
+    """Товары с характеристиками."""
     product_info = models.ForeignKey(ProductInfo, related_name='product_parameters', on_delete=models.CASCADE, null=True, blank=True, verbose_name='Информация о продукте')
     parameter = models.ForeignKey(Parameter, related_name='product_parameters', on_delete=models.CASCADE, null=True, blank=True, verbose_name='Параметр')
     value = models.CharField(max_length=40, null=True, blank=True, verbose_name='Значение')
@@ -203,9 +183,7 @@ class ProductParameter(models.Model):
 
 
 class Contact(models.Model):
-    """
-    Контактная информация пользователя.
-    """
+    """Контактная информация пользователя."""
     user = models.ForeignKey(User, related_name='contacts', on_delete=models.CASCADE, verbose_name='Пользователь')
     city = models.CharField(max_length=50, verbose_name='Город')
     street = models.CharField(max_length=100, verbose_name='Улица')
@@ -225,9 +203,7 @@ class Contact(models.Model):
 
 
 class Order(models.Model):
-    """
-    Заказ.
-    """
+    """Заказ."""
     user = models.ForeignKey(User, related_name='orders', on_delete=models.CASCADE, null=True, blank=True, verbose_name='Пользователь')
     dt = models.DateTimeField(auto_now_add=True, verbose_name='Дата и время создания')
     state = models.TextField(choices=OrderStateChoices.choices, verbose_name='Статус')
@@ -243,9 +219,7 @@ class Order(models.Model):
     
 
 class OrderItem(models.Model):
-    """
-    Позиции в заказе.
-    """
+    """Позиции в заказе."""
     order = models.ForeignKey(Order, related_name='order_items', on_delete=models.CASCADE, null=True, blank=True, verbose_name='Заказ')
     product_info = models.ForeignKey(ProductInfo, related_name='order_items', on_delete=models.CASCADE, null=True, blank=True, verbose_name='Информация о продукте')
     quantity = models.PositiveIntegerField(verbose_name='Количество')

@@ -4,7 +4,13 @@ from django.core.mail import EmailMultiAlternatives
 from backend.models import User 
 
 
-def send_registration_confirmation(user_id, **kwargs):
+def send_registration_confirmation(user_id: int, **kwargs):
+    """Отправить эл. письмо с подтверждением регистрации.
+
+    
+    Ключевые аргументы:
+    user_id -- ID пользователя в базе данных.
+    """
     user = User.objects.get(id=user_id)
     subject = 'Email Confirmation'
     to = [user.email,]
@@ -13,7 +19,12 @@ def send_registration_confirmation(user_id, **kwargs):
     message.send()
 
 
-def send_order_confirmation(user_id, **kwargs):
+def send_order_confirmation(user_id: int, **kwargs):
+    """Отправить эл. письмо с подтверждением заказа.
+    
+    Ключевые аргументы: 
+    user_id -- ID пользователя в базе данных.
+    """
     user = User.objects.get(id=user_id)
     subject = 'Order Confirmation'
     to = [user.email,]
