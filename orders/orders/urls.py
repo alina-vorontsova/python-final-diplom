@@ -16,7 +16,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-
+from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView
 from backend.views import SupplierUpdate, ShopView, CategoryView, ProductView, OrderView, OrderInfoView, BasketView, OrderConfirmation, UserRegisterView, Login, ContactView
 
 
@@ -35,5 +35,8 @@ urlpatterns = [
     path('orders/<int:order_id>/', OrderInfoView.as_view(), name='order_info'), 
     path('basket/', BasketView.as_view(), name='basket'),
     path('order_confirmation/', OrderConfirmation.as_view(), name='order_confirmation'),
-    path('', include(router.urls))
+    path('', include(router.urls)),
+    path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
+    path('api/schema/swagger-ui/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
+    path('api/schema/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
 ]
