@@ -1,7 +1,8 @@
 from rest_framework import serializers
 from rest_framework.serializers import ModelSerializer, StringRelatedField
 
-from backend.models import Shop, Category, Product, ProductParameter, ProductInfo, Order, Contact, OrderItem, User
+from backend.models import (Shop, Category, Product, ProductParameter, ProductInfo, 
+                            Order, Contact, OrderItem, User)
 
 
 class UserSerializer(ModelSerializer):
@@ -84,6 +85,13 @@ class OrderSerializer(ModelSerializer):
 
 class OrderItemSerializer(ModelSerializer):
     """Работа с позициями в заказах."""
+    class Meta:
+        model = OrderItem
+        fields = ['order', 'product_info', 'quantity']
+
+
+class DetailedOrderItemSerializer(ModelSerializer):
+    """Работа с подробной информацией о позициях в заказе."""
     product_info = ProductInfoSerializer(read_only=True)
     
     class Meta:
@@ -95,7 +103,7 @@ class OrderInfoSerializer(ModelSerializer):
     """Работа с подробной информацией о заказах и позициях в них."""
     total_sum = serializers.IntegerField()
     contact = ContactSerializer(read_only=True)
-    order_items = OrderItemSerializer(read_only=True, many=True)
+    order_items = DetailedOrderItemSerializer(read_only=True, many=True)
     user = UserSerializer(read_only=True)
     
     class Meta:

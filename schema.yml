@@ -91,6 +91,18 @@ paths:
       responses:
         '200':
           description: No response body
+  /new_order/:
+    post:
+      operationId: new_order_create
+      description: Создать новый заказ.
+      tags:
+      - new_order
+      security:
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
   /order_confirmation/:
     post:
       operationId: order_confirmation_create
@@ -106,49 +118,45 @@ paths:
           description: No response body
   /orders/:
     get:
-      operationId: orders_retrieve
-      description: Просмотреть все заказы, созданные пользователем.
+      operationId: orders_list
+      description: Просмотр общей информации о всех заказах и подробной информации
+        об одном заказе.
       tags:
       - orders
       security:
       - basicAuth: []
-      - {}
       responses:
         '200':
-          description: No response body
-    post:
-      operationId: orders_create
-      description: Создать новый заказ.
-      tags:
-      - orders
-      security:
-      - basicAuth: []
-      - {}
-      responses:
-        '200':
-          description: No response body
-  /orders/{order_id}/:
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Order'
+          description: ''
+  /orders/{id}/:
     get:
-      operationId: orders_retrieve_2
-      description: |-
-        Просмотреть подробную информацию о заказе.
-
-        Ключевые аргументы:
-        order_id -- ID заказа в базе данных.
+      operationId: orders_retrieve
+      description: Просмотр общей информации о всех заказах и подробной информации
+        об одном заказе.
       parameters:
       - in: path
-        name: order_id
+        name: id
         schema:
           type: integer
+        description: A unique integer value identifying this Заказ.
         required: true
       tags:
       - orders
       security:
       - basicAuth: []
-      - {}
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderInfo'
+          description: ''
   /products/:
     get:
       operationId: products_list
@@ -295,6 +303,134 @@ components:
       - id
       - name
       - shops
+    Contact:
+      type: object
+      description: Работа с контактами пользователей.
+      properties:
+        city:
+          type: string
+          title: Город
+          maxLength: 50
+        street:
+          type: string
+          title: Улица
+          maxLength: 100
+        house:
+          type: string
+          nullable: true
+          title: Дом
+          maxLength: 15
+        building:
+          type: string
+          nullable: true
+          title: Строение
+          maxLength: 15
+        structure:
+          type: string
+          nullable: true
+          title: Корпус
+          maxLength: 15
+        apartment:
+          type: string
+          nullable: true
+          title: Квартира
+          maxLength: 15
+        phone:
+          type: string
+          title: Телефон
+          maxLength: 20
+      required:
+      - city
+      - phone
+      - street
+    DetailedOrderItem:
+      type: object
+      description: Работа с подробной информацией о позициях в заказе.
+      properties:
+        order:
+          type: integer
+          nullable: true
+          title: Заказ
+        product_info:
+          allOf:
+          - $ref: '#/components/schemas/ProductInfo'
+          readOnly: true
+        quantity:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Количество
+      required:
+      - product_info
+      - quantity
+    Order:
+      type: object
+      description: Работа с общей информацией о заказах.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        user:
+          type: integer
+          writeOnly: true
+          nullable: true
+          title: Пользователь
+        dt:
+          type: string
+          format: date-time
+          readOnly: true
+          title: Дата и время создания
+        state:
+          allOf:
+          - $ref: '#/components/schemas/StateEnum'
+          title: Статус
+        total_sum:
+          type: integer
+        contact:
+          allOf:
+          - $ref: '#/components/schemas/Contact'
+          readOnly: true
+      required:
+      - contact
+      - dt
+      - id
+      - state
+      - total_sum
+    OrderInfo:
+      type: object
+      description: Работа с подробной информацией о заказах и позициях в них.
+      properties:
+        dt:
+          type: string
+          format: date-time
+          readOnly: true
+          title: Дата и время создания
+        state:
+          allOf:
+          - $ref: '#/components/schemas/StateEnum'
+          title: Статус
+        user:
+          allOf:
+          - $ref: '#/components/schemas/User'
+          readOnly: true
+        contact:
+          allOf:
+          - $ref: '#/components/schemas/Contact'
+          readOnly: true
+        order_items:
+          type: array
+          items:
+            $ref: '#/components/schemas/DetailedOrderItem'
+          readOnly: true
+        total_sum:
+          type: integer
+      required:
+      - contact
+      - dt
+      - order_items
+      - state
+      - total_sum
+      - user
     Product:
       type: object
       description: Работа с общей информацией о товарах.
@@ -313,6 +449,77 @@ components:
       - category
       - id
       - name
+    ProductInfo:
+      type: object
+      description: Работа с подробной информацией о товарах.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        external_id:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Внешний Id
+        product:
+          allOf:
+          - $ref: '#/components/schemas/Product'
+          readOnly: true
+        model:
+          type: string
+          title: Модель
+          maxLength: 100
+        shop:
+          type: integer
+          nullable: true
+          title: Магазин
+        quantity:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Количество
+        price:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Цена
+        price_rrc:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Рекомендуемая розничная цена
+        parameters:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductParameter'
+          readOnly: true
+      required:
+      - external_id
+      - id
+      - model
+      - parameters
+      - price
+      - price_rrc
+      - product
+      - quantity
+    ProductParameter:
+      type: object
+      description: Работа с параметрами товаров.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        parameter:
+          type: string
+          readOnly: true
+        value:
+          type: string
+          nullable: true
+          title: Значение
+          maxLength: 40
+      required:
+      - id
+      - parameter
     Shop:
       type: object
       description: Работа с магазинами.
@@ -330,6 +537,44 @@ components:
       required:
       - id
       - name
+    StateEnum:
+      enum:
+      - basket
+      - newНовый
+      - confirmed
+      - assembled
+      - sent
+      - delivered
+      - canceled
+      type: string
+      description: |-
+        * `basket` - Статус корзины
+        * `newНовый` - New
+        * `confirmed` - Подтвержден
+        * `assembled` - Собран
+        * `sent` - Отправлен
+        * `delivered` - Доставлен
+        * `canceled` - Отменен
+    User:
+      type: object
+      description: Работа с пользователями.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        email:
+          type: string
+          format: email
+          title: Эл. почта
+          maxLength: 254
+        full_name:
+          type: string
+          nullable: true
+          title: Фамилия, имя, отчество
+          maxLength: 100
+      required:
+      - email
+      - id
   securitySchemes:
     basicAuth:
       type: http

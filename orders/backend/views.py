@@ -10,8 +10,10 @@ from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 
 from backend.permissions import IsShop 
-from backend.models import Shop, Category, Product, ProductInfo, Parameter, ProductParameter, Order, Contact, User
-from backend.serializers import ShopSerializer, CategorySerializer, ProductSerializer, OrderSerializer, OrderInfoSerializer, OrderItemSerializer
+from backend.models import (Shop, Category, Product, ProductInfo, Parameter, 
+                            ProductParameter, Order, Contact, User)
+from backend.serializers import (ShopSerializer, CategorySerializer, ProductSerializer, 
+                                 OrderSerializer, OrderInfoSerializer, OrderItemSerializer)
 from backend.tools import send_registration_confirmation, send_order_confirmation
 
 
@@ -125,18 +127,31 @@ class ProductView(ReadOnlyModelViewSet):
     filterset_fields = ['category']
 
 
-class OrderView(APIView):
-    """Получение всех заказов, созданных пользователем, и создание нового заказа."""
-    
-    def get(self, request, *args, **kwargs):
-        """Просмотреть все заказы, созданные пользователем."""
-        permission_classes = [IsAuthenticated]
-        orders = Order.objects.filter(user_id=request.user.id).exclude(state='basket').annotate(total_sum=Sum(F('order_items__quantity') * F('order_items__product_info__price')))
-        serializer = OrderSerializer(orders, many=True)
-        return Response(serializer.data)
-    
+class OrderView(ReadOnlyModelViewSet):
+    """Просмотр общей информации о всех заказах и подробной информации об одном заказе."""
+    queryset = Order.objects.annotate(total_sum=Sum(F('order_items__quantity') * F('order_items__product_info__price')))
+    permission_classes = [IsAuthenticated]
+    serializer_class = OrderSerializer
+    detail_serializer_class = OrderInfoSerializer
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        return queryset.filter(user=self.request.user).exclude(state='basket')
+
+    def get_serializer_class(self):
+        """Вернуть тип сериализатора с общей или подробной информацией в зависимости от типа запроса."""
+        if self.action == 'retrieve':
+            if hasattr(self, 'detail_serializer_class'):
+                return self.detail_serializer_class
+
+        return super(OrderView, self).get_serializer_class()
+
+
+class OrderCreationView(APIView):
+    """Создание нового заказа."""
     def post(self, request, *args, **kwargs):
         """Создать новый заказ."""
+        permission_classes = [IsAuthenticated]
         order = Order.objects.create(user = request.user,
                                      state ='basket')
         for order_item in request.data:
@@ -148,20 +163,6 @@ class OrderView(APIView):
                 return JsonResponse({'Status': False, 'Errors': serializer.errors})
         return JsonResponse({'Status': True})
 
-
-class OrderInfoView(APIView):
-    """Просмотр подробной информации о заказе."""
-    def get(self, request, order_id: int, *args, **kwargs):
-        """Просмотреть подробную информацию о заказе.
-    
-        Ключевые аргументы: 
-        order_id -- ID заказа в базе данных.
-        """
-        permission_classes = [IsAuthenticated]
-        order = Order.objects.filter(id=order_id).annotate(total_sum=Sum(F('order_items__quantity') * F('order_items__product_info__price')))
-        serializer = OrderInfoSerializer(order, many=True)
-        return Response(serializer.data)
-        
 
 class BasketView(APIView):
     """Заполнение адреса при оформлении заказа на стадии 'в корзине'."""
@@ -177,7 +178,7 @@ class BasketView(APIView):
         # return redirect("order_confirmation")
         
 
-class OrderConfirmation(APIView):
+class OrderConfirmationView(APIView):
     """Подтверждение заказа от пользователя и отправка эл. письма с подтверждением заказа."""
     def post(self, request, *args, **kwargs):
         """Получить потверждение заказа от пользователя и отправить эл. письмо с подтверждением заказа."""
