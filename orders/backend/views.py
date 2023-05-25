@@ -111,7 +111,7 @@ class ShopView(ReadOnlyModelViewSet):
 
 class CategoryView(ReadOnlyModelViewSet):
     """Просмотр всех категорий товаров и сортировка по параметру 'магазины'."""
-    queryset = Category.objects.all()
+    queryset = Category.objects.prefetch_related('shops').all()
     serializer_class = CategorySerializer
     permission_classes = [IsAuthenticated]
     filterset_backends = [DjangoFilterBackend]
@@ -120,7 +120,7 @@ class CategoryView(ReadOnlyModelViewSet):
 
 class ProductView(ReadOnlyModelViewSet):
     """Просмотр всех товаров и сортировка по параметру 'категория'."""
-    queryset = Product.objects.all()
+    queryset = Product.objects.select_related('category').all()
     serializer_class = ProductSerializer
     permission_classes = [IsAuthenticated]
     filterset_backends = [DjangoFilterBackend]
@@ -136,7 +136,13 @@ class OrderView(ReadOnlyModelViewSet):
 
     def get_queryset(self):
         queryset = super().get_queryset()
-        return queryset.filter(user=self.request.user).exclude(state='basket')
+        if self.action == 'list':
+            return queryset.filter(user=self.request.user).exclude(state='basket').prefetch_related(
+                'contact', 'order_items__product_info').all()
+        elif self.action == 'retrieve':
+            return queryset.filter(user=self.request.user).exclude(state='basket').prefetch_related(
+                'order_items__product_info__product__category', 'user',
+                'order_items__product_info__product_parameters__parameter', 'contact').all()
 
     def get_serializer_class(self):
         """Вернуть тип сериализатора с общей или подробной информацией в зависимости от типа запроса."""
