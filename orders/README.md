@@ -11,6 +11,10 @@ createdb -U postgres diploma
 ```bash
 python orders/manage.py migrate
 ```
+Для silk:
+```bash
+python orders/manage.py collectstatic
+```
 4. Запустить сервер 
 ```bash 
 python orders/manage.py runserver
