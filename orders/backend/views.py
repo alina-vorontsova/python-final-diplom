@@ -9,12 +9,12 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 
-from backend.permissions import IsShop 
-from backend.models import (Shop, Category, Product, ProductInfo, Parameter, 
+from .permissions import IsShop 
+from .models import (Shop, Category, Product, ProductInfo, Parameter, 
                             ProductParameter, Order, Contact, User)
-from backend.serializers import (ShopSerializer, CategorySerializer, ProductSerializer, 
+from .serializers import (ShopSerializer, CategorySerializer, ProductSerializer, 
                                  OrderSerializer, OrderInfoSerializer, OrderItemSerializer)
-from backend.tools import send_registration_confirmation, send_order_confirmation
+from .tools import send_registration_confirmation, send_order_confirmation
 
 
 class UserRegisterView(APIView):

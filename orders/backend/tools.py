@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
 
-from backend.models import User 
+from .models import User 
 
 
 def send_registration_confirmation(user_id: int, **kwargs):
