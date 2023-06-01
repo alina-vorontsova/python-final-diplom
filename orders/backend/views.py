@@ -196,7 +196,5 @@ class OrderConfirmationView(APIView):
             order.save()
             # send_order_confirmation(request.user.id)
             return JsonResponse({'Status': True})
-            # return redirect("order_confirmed")
         elif action == 'disapprove':
             return JsonResponse({'Status': 'Now you can change your order'})
-            # return redirect("basket")
