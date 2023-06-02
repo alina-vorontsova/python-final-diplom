@@ -1,10 +1,12 @@
 from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
+from celery import shared_task
 
 from .models import User 
 
 
-def send_registration_confirmation(user_id: int, **kwargs):
+@shared_task()
+def send_registration_email_task(user_id: int, **kwargs):
     """Отправить эл. письмо с подтверждением регистрации.
 
     
@@ -19,7 +21,8 @@ def send_registration_confirmation(user_id: int, **kwargs):
     message.send()
 
 
-def send_order_confirmation(user_id: int, **kwargs):
+@shared_task()
+def send_order_email_task(user_id: int, **kwargs):
     """Отправить эл. письмо с подтверждением заказа.
     
     Ключевые аргументы: 

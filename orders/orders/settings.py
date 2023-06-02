@@ -190,3 +190,7 @@ For more information, visit https://github.com/alina-vorontsova/python-final-dip
     'SWAGGER_UI_FAVICON_HREF': 'SIDECAR',
     'REDOC_DIST': 'SIDECAR',
 }
+
+
+CELERY_BROKER_URL = os.getenv('CELERY_BACKEND')
+CELERY_RESULT_BACKEND = os.getenv('CELERY_BROKER')

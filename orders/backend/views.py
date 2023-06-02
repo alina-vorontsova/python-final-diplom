@@ -14,7 +14,7 @@ from .models import (Shop, Category, Product, ProductInfo, Parameter,
                             ProductParameter, Order, Contact, User)
 from .serializers import (ShopSerializer, CategorySerializer, ProductSerializer, 
                                  OrderSerializer, OrderInfoSerializer, OrderItemSerializer)
-from .tools import send_registration_confirmation, send_order_confirmation
+from .tasks import send_registration_email_task, send_order_email_task
 
 
 class UserRegisterView(APIView):
@@ -32,7 +32,7 @@ class UserRegisterView(APIView):
                                    position=request.data['position'])
         user.set_password(request.data['password'])
         user.save()
-        # send_registration_confirmation(request.user.id)
+        # send_registration_email_task.delay(request.user.id)
         return JsonResponse({'Status': True})
 
 
@@ -194,7 +194,7 @@ class OrderConfirmationView(APIView):
         if action == 'approve':
             order.state = 'confirmed'
             order.save()
-            # send_order_confirmation(request.user.id)
+            # send_order_email_task.delay(request.user.id)
             return JsonResponse({'Status': True})
         elif action == 'disapprove':
             return JsonResponse({'Status': 'Now you can change your order'})
