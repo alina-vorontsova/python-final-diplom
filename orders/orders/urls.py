@@ -16,30 +16,56 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView
-from backend.views import (SupplierUpdate, ShopView, CategoryView, ProductView, OrderView, 
-                           OrderCreationView, BasketView, OrderConfirmationView, UserRegisterView, 
-                           Login, ContactView)
+from drf_spectacular.views import (
+    SpectacularAPIView,
+    SpectacularSwaggerView,
+    SpectacularRedocView,
+)
+from orders.backend.views import (
+    SupplierUpdate,
+    ShopView,
+    CategoryView,
+    ProductView,
+    OrderView,
+    OrderCreationView,
+    BasketView,
+    OrderConfirmationView,
+    UserRegisterView,
+    Login,
+    ContactView,
+)
 
 
 router = DefaultRouter()
-router.register(r'shops', ShopView, basename='shops')
-router.register(r'categories', CategoryView, basename='categories')
-router.register(r'products', ProductView, basename='products')
-router.register(r'orders', OrderView, basename='orders')
+router.register(r"shops", ShopView, basename="shops")
+router.register(r"categories", CategoryView, basename="categories")
+router.register(r"products", ProductView, basename="products")
+router.register(r"orders", OrderView, basename="orders")
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('register/', UserRegisterView.as_view(), name='register'),
-    path('login/', Login.as_view(), name='login'),
-    path('get_contact/', ContactView.as_view(), name='get_contact_info'),
-    path('update/<str:file_name>/', SupplierUpdate.as_view(), name='update_products'), 
-    path('new_order/', OrderCreationView.as_view(), name='order_creation'),
-    path('basket/', BasketView.as_view(), name='basket'),
-    path('order_confirmation/', OrderConfirmationView.as_view(), name='order_confirmation'),
-    path('', include(router.urls)),
-    path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
-    path('api/schema/swagger-ui/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
-    path('api/schema/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
-    path('silk/', include('silk.urls', namespace='silk'))
+    path("admin/", admin.site.urls),
+    path("register/", UserRegisterView.as_view(), name="register"),
+    path("login/", Login.as_view(), name="login"),
+    path("get_contact/", ContactView.as_view(), name="get_contact_info"),
+    path("update/<str:file_name>/", SupplierUpdate.as_view(), name="update_products"),
+    path("new_order/", OrderCreationView.as_view(), name="order_creation"),
+    path("basket/", BasketView.as_view(), name="basket"),
+    path(
+        "order_confirmation/",
+        OrderConfirmationView.as_view(),
+        name="order_confirmation",
+    ),
+    path("", include(router.urls)),
+    path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
+    path(
+        "api/schema/swagger-ui/",
+        SpectacularSwaggerView.as_view(url_name="schema"),
+        name="swagger-ui",
+    ),
+    path(
+        "api/schema/redoc/",
+        SpectacularRedocView.as_view(url_name="schema"),
+        name="redoc",
+    ),
+    path("silk/", include("silk.urls", namespace="silk")),
 ]
